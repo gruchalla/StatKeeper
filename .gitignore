@@ -1,0 +1,33 @@
+# User-specific Xcode data
+xcuserdata/
+*.xcuserstate
+
+# Derived data (build artifacts)
+DerivedData/
+build/
+
+# Swift Package Manager
+.build/
+
+# Xcode workspace user data
+*.xcworkspace/xcuserdata/
+
+# Logs
+*.log
+
+# macOS system files
+.DS_Store
+
+# Temporary files
+*.swp
+*.tmp
+*.lock
+
+# Archives / distribution
+*.xcarchive
+*.ipa
+
+# Environment / secrets
+.env
+*.env
+
