@@ -36,6 +36,65 @@ class GameRecord: Identifiable {
         self.timeIn = timeIn
         self.notes = notes
     }
+    
+    func copy() -> GameRecord {
+        return GameRecord(
+            buckets: self.buckets,
+            misses: self.misses,
+            points: self.points,
+            rebounds: self.rebounds,
+            assists: self.assists,
+            steals: self.steals,
+            blocks: self.blocks,
+            timeIn: self.timeIn,
+            notes: self.notes
+        )
+    }
+    
+    func clear() {
+        self.buckets = []
+        self.misses = []
+        self.points = 0
+        self.rebounds = 0
+        self.assists = 0
+        self.steals = 0
+        self.blocks = 0
+        self.timeIn = 0
+        self.notes = ""
+    }
+    
+    func prettyPrint() -> String {
+        let ones = self.buckets.filter { $0 == 1 }.count
+        let twos = self.buckets.filter { $0 == 2 }.count
+        let threes = self.buckets.filter { $0 == 3 }.count
+        
+        let one_misses = self.misses.filter { $0 == 1 }.count
+        let two_misses = self.misses.filter { $0 == 2 }.count
+        let three_misses = self.misses.filter { $0 == 3 }.count
+        
+        let ft = Float(ones) / Float(ones  + one_misses)
+        let fg = Float(twos+threes) / Float(twos + two_misses + threes + three_misses)
+        let p3 = Float(threes) / Float(threes + three_misses)
+        let minutes = Int(self.timeIn) / 60
+        
+        // Copies the value to the system clipboard
+        let parts: [String?] = [
+            self.notes,
+            self.points > 0 ? "PTS \(self.points)" : nil,
+            ones > 0 || one_misses > 0 ? "   FT  \(ones)/\(ones+one_misses)  (\(ft.formatted(.percent.precision(.fractionLength(0)))))" : nil,
+            twos > 0 || two_misses > 0 ? "   FG \(twos+threes)/\(twos+two_misses+threes+three_misses)  (\(fg.formatted(.percent.precision(.fractionLength(0)))))" : nil,
+            threes > 0 || three_misses > 0 ? "   3P  \(threes)/\(threes+three_misses)  (\(p3.formatted(.percent.precision(.fractionLength(0)))))" : nil,
+            self.rebounds > 0 ? "REB \(self.rebounds)" : nil,
+            self.assists > 0 ? "AST \(self.assists)" : nil,
+            self.steals > 0 ? "STL \(self.steals)" : nil,
+            self.blocks > 0 ? "BLK \(self.blocks)" : nil,
+            "MIN \(minutes)"
+        ]
+
+        return parts
+            .compactMap { $0 } // Removes all the 'nil' entries
+            .joined(separator: "\n")
+    }
 }
 
 struct ContentView: View {
@@ -59,28 +118,72 @@ struct ContentView: View {
 struct CountsView: View {
     @Environment(\.modelContext) private var modelContext // Access the database context
 
-    @State private var buckets: [Int] = []
-    @State private var misses: [Int] = []
-    @State private var ones = 0
-    @State private var twos = 0
-    @State private var threes = 0
-    @State private var points = 0
-    @State private var one_misses = 0
-    @State private var two_misses = 0
-    @State private var three_misses = 0
-    @State private var rebounds = 0
-    @State private var assists = 0
-    @State private var steals = 0
-    @State private var blocks = 0
+    @State private var record = GameRecord(
+        buckets: [],
+        misses: [],
+        points: 0,
+        rebounds: 0,
+        assists: 0,
+        steals: 0,
+        blocks: 0,
+        timeIn: 0,
+        notes: ""
+    )
     
-    @State private var timeIn: TimeInterval = 0
-    @State private var timerRunning = false
-    @State private var startTime = Date()
-
-    @State private var notes: String = ""
+    @State private var ones : Int = 0
+    @State private var twos : Int = 0
+    @State private var threes : Int = 0
+    @State private var points : Int = 0
+    @State private var one_misses : Int = 0
+    @State private var two_misses : Int = 0
+    @State private var three_misses : Int = 0
+    @State private var timerRunning : Bool = false
+    @State private var startTime : Date = Date()
 
     @State private var showResetAlert = false
 
+    struct MissButton: View {
+        let label: String
+        let action: () -> Void
+        
+        var body: some View {
+            Button(action: action) {
+                ZStack {
+                    Text(label)
+                        .padding()
+                        .frame(width: 45, height: 45)
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .clipShape(Circle())
+                    Capsule()
+                        .fill(Color.white)
+                        .frame(width: 2, height: 50)
+                        .rotationEffect(.degrees(45))
+                }
+            }
+        }
+    }
+    
+    struct MinusButton: View {
+        let action: () -> Void
+        
+        var body: some View {
+            Button(action: action) {
+                Text("-")
+                    .frame(width: 30, height: 30)
+                    .foregroundColor(Color(.label))
+                    .clipShape(Circle())
+                    .overlay(
+                        Circle()
+                            .stroke(Color(.label).opacity(0.2), lineWidth: 4)
+                            .blur(radius: 4)
+                            .offset(x: 2, y: 2)
+                            .mask(Circle())
+                    )
+            }
+        }
+    }
+        
     // Timer that "ticks" every 0.1 seconds
     let timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
     
@@ -98,32 +201,20 @@ struct CountsView: View {
                     .padding(.bottom, 1)
                     
                     HStack {
-                        Button(action: {
-                            if let unwrappedBucket = buckets.popLast() {
-                                points -= unwrappedBucket
+                        MinusButton(action: {
+                            if let unwrappedBucket = record.buckets.popLast() {
+                                record.points -= unwrappedBucket
                             }
                             playSystemClick(soundID:1123)
-                            ones = buckets.filter { $0 == 1 }.count
-                            twos = buckets.filter { $0 == 2 }.count
-                            threes = buckets.filter { $0 == 3 }.count
-                        }){
-                            Text("-")
-                                .frame(width: 30, height: 30)
-                                .foregroundColor(Color(.label))
-                                .clipShape(Circle())
-                                .overlay(Circle()
-                                            .stroke(Color(.label).opacity(0.2), lineWidth: 4)
-                                            .blur(radius: 4)
-                                            .offset(x: 2, y: 2)
-                                            .mask(Circle()))
-                        }
+                            updateCounts()
+                        })
                         
                         Spacer()
-                        Text(points, format: .number).font(.title)
+                        Text(record.points, format: .number).font(.title)
                         Spacer()
                         Button(action: {
-                            buckets.append(1)
-                            points += 1
+                            record.buckets.append(1)
+                            record.points += 1
                             ones += 1
                             playSystemClick()
                         }){
@@ -135,8 +226,8 @@ struct CountsView: View {
                                 .clipShape(Circle())
                         }
                         Button(action: {
-                            buckets.append(2)
-                            points += 2
+                            record.buckets.append(2)
+                            record.points += 2
                             twos += 1
                             playSystemClick()
                         }){
@@ -148,8 +239,8 @@ struct CountsView: View {
                                 .clipShape(Circle())
                         }
                         Button(action:{
-                            buckets.append(3)
-                            points += 3
+                            record.buckets.append(3)
+                            record.points += 3
                             threes += 1
                             playSystemClick()
                         }){
@@ -161,82 +252,31 @@ struct CountsView: View {
                         }
                     }
                     HStack {
-                        Button(action: {
-                            if !misses.isEmpty {
-                                misses.removeLast()
+                        MinusButton(action: {
+                            if !record.misses.isEmpty {
+                                record.misses.removeLast()
                             }
                             playSystemClick(soundID:1123)
-                            one_misses = misses.filter { $0 == 1 }.count
-                            two_misses = misses.filter { $0 == 2 }.count
-                            three_misses = misses.filter { $0 == 3 }.count
-                        }){
-                            Text("-")
-                                .frame(width: 30, height: 30)
-                                .foregroundColor(Color(.label))
-                                .clipShape(Circle())
-                                .overlay(Circle()
-                                            .stroke(Color(.label).opacity(0.2), lineWidth: 4)
-                                            .blur(radius: 4)
-                                            .offset(x: 2, y: 2)
-                                            .mask(Circle()))
-
-                        }
+                            updateCounts()
+                        })
+                        
                         Spacer()
-                        Button(action: {
-                            misses.append(1)
+                        MissButton(label: "1", action: {
+                            record.misses.append(1)
                             one_misses += 1
                             playSystemClick()
-                        }){
-                            ZStack {
-                                Text("1")
-                                    .padding()
-                                    .frame(width: 45, height: 45)
-                                    .background(Color.blue)
-                                    .foregroundColor(.white)
-                                    .clipShape(Circle())
-                                Capsule()
-                                    .fill(Color.white)
-                                    .frame(width: 4, height: 50)
-                                    .rotationEffect(.degrees(45))
-                            }
-                        }
-                        Button(action: {
-                            misses.append(2)
+                        })
+                        MissButton(label: "2", action: {
+                            record.misses.append(2)
                             two_misses += 1
                             playSystemClick()
 
-                        }){
-                            ZStack {
-                                Text("2")
-                                    .padding()
-                                    .frame(width: 45, height: 45)
-                                    .background(Color.blue)
-                                    .foregroundColor(.white)
-                                    .clipShape(Circle())
-                                Capsule()
-                                    .fill(Color.white)
-                                    .frame(width: 4, height: 50)
-                                    .rotationEffect(.degrees(45))
-                            }
-                        }
-                        Button(action:{
-                            misses.append(3)
+                        })
+                        MissButton(label: "3", action:{
+                            record.misses.append(3)
                             three_misses += 1
                             playSystemClick()
-                        }){
-                            ZStack {
-                                Text("3")
-                                    .padding()
-                                    .frame(width: 45, height: 45)
-                                    .background(Color.blue)
-                                    .foregroundColor(.white)
-                                    .clipShape(Circle())
-                                Capsule()
-                                    .fill(Color.white)
-                                    .frame(width: 4, height: 50)
-                                    .rotationEffect(.degrees(45))
-                            }
-                        }
+                        })
                     
                     }
                     HStack{
@@ -271,27 +311,17 @@ struct CountsView: View {
                         .padding(.bottom, 1)
                         
                         HStack {
-                            Button(action: {
-                                rebounds -= rebounds == 0 ? 0 : 1
+                            MinusButton(action: {
+                                record.rebounds -= record.rebounds == 0 ? 0 : 1
                                 playSystemClick()
-                            }){
-                                Text("-")
-                                    .frame(width: 25, height: 25)
-                                    .foregroundColor(Color(.label))
-                                    .clipShape(Circle())
-                                    .overlay(Circle()
-                                        .stroke(Color(.label).opacity(0.2), lineWidth: 4)
-                                        .blur(radius: 4)
-                                        .offset(x: 2, y: 2)
-                                        .mask(Circle()))
-                            }
+                            })
                             
                             Spacer()
-                            Text(rebounds, format: .number).bold()
+                            Text(record.rebounds, format: .number).bold()
                             Spacer()
 
                             Button(action: {
-                                rebounds += 1
+                                record.rebounds += 1
                                 playSystemClick()
                             }){
                                 Text("+")
@@ -325,27 +355,17 @@ struct CountsView: View {
                         .padding(.bottom, 1)
                         
                         HStack {
-                            Button(action: {
-                                assists -= assists == 0 ? 0 : 1
+                            MinusButton(action: {
+                                record.assists -= record.assists == 0 ? 0 : 1
                                 playSystemClick()
-                            }){
-                                Text("-")
-                                    .frame(width: 25, height: 25)
-                                    .foregroundColor(Color(.label))
-                                    .clipShape(Circle())
-                                    .overlay(Circle()
-                                        .stroke(Color(.label).opacity(0.2), lineWidth: 4)
-                                        .blur(radius: 4)
-                                        .offset(x: 2, y: 2)
-                                        .mask(Circle()))
-                            }
+                            })
                             
                             Spacer()
-                            Text(assists, format: .number).bold()
+                            Text(record.assists, format: .number).bold()
                             Spacer()
 
                             Button(action: {
-                                assists += 1
+                                record.assists += 1
                                 playSystemClick()
                             }){
                                 Text("+")
@@ -381,26 +401,16 @@ struct CountsView: View {
                         .padding(.bottom, 1)
                         
                         HStack {
-                            Button(action: {
-                                steals -= steals == 0 ? 0 : 1
+                            MinusButton(action: {
+                                record.steals -= record.steals == 0 ? 0 : 1
                                 playSystemClick()
-                            }){
-                                Text("-")
-                                    .frame(width: 25, height: 25)
-                                    .foregroundColor(Color(.label))
-                                    .clipShape(Circle())
-                                    .overlay(Circle()
-                                        .stroke(Color(.label).opacity(0.2), lineWidth: 4)
-                                        .blur(radius: 4)
-                                        .offset(x: 2, y: 2)
-                                        .mask(Circle()))
-                            }
+                            })
                             
                             Spacer()
-                            Text(steals, format: .number).bold()
+                            Text(record.steals, format: .number).bold()
                             Spacer()
                             Button(action: {
-                                steals += 1
+                                record.steals += 1
                                 playSystemClick()
                             }){
                                 Text("+")
@@ -434,26 +444,16 @@ struct CountsView: View {
                         .padding(.bottom, 1)
                         
                         HStack {
-                            Button(action: {
-                                blocks -= blocks == 0 ? 0 : 1
+                            MinusButton(action: {
+                                record.blocks -= record.blocks == 0 ? 0 : 1
                                 playSystemClick()
-                            }){
-                                Text("-")
-                                    .frame(width: 25, height: 25)
-                                    .foregroundColor(Color(.label))
-                                    .clipShape(Circle())
-                                    .overlay(Circle()
-                                                .stroke(Color(.label).opacity(0.2), lineWidth: 4)
-                                                .blur(radius: 4)
-                                                .offset(x: 2, y: 2)
-                                                .mask(Circle()))
-                            }
+                            })
                             
                             Spacer()
-                            Text(blocks, format: .number).bold()
+                            Text(record.blocks, format: .number).bold()
                             Spacer()
                             Button(action: {
-                                blocks += 1
+                                record.blocks += 1
                                 playSystemClick()
                             }){
                                 Text("+")
@@ -481,7 +481,7 @@ struct CountsView: View {
                     Button(action: {
                         if !timerRunning {
                             // Adjust startTime so it accounts for time already elapsed
-                            startTime = Date().addingTimeInterval(-timeIn)
+                            startTime = Date().addingTimeInterval(-record.timeIn)
                             timerRunning.toggle()
                             UIApplication.shared.isIdleTimerDisabled = true
                         }
@@ -500,7 +500,7 @@ struct CountsView: View {
                     .animation(.spring(response: 0.3), value: timerRunning)
                     
                     Spacer()
-                    Text(formatTime(timeIn))
+                    Text(formatTime(record.timeIn))
                         .font(.title)
                     Spacer()
                     // SUB OUT
@@ -537,14 +537,14 @@ struct CountsView: View {
                 .onReceive(timer) { _ in
                     if timerRunning {
                         // Update the elapsed time based on real world time
-                        timeIn = Date().timeIntervalSince(startTime)
+                        record.timeIn = Date().timeIntervalSince(startTime)
                     }
                 }
                 VStack(alignment: .leading) {
                     Text("Game Notes")
                         .font(.headline)
                     
-                    TextEditor(text: $notes)
+                    TextEditor(text: $record.notes)
                         .frame(height: 150) // Give it some space
                         .padding(4)
                         .background(RoundedRectangle(cornerRadius: 8).stroke(Color.gray.opacity(0.2)))
@@ -582,28 +582,7 @@ struct CountsView: View {
                     }
                     
                     Button(action: {
-                        let ft = Float(ones) / Float(ones  + one_misses)
-                        let fg = Float(twos+threes) / Float(twos + two_misses + threes + three_misses)
-                        let p3 = Float(threes) / Float(threes + three_misses)
-                        let minutes = Int(timeIn) / 60
-                        
-                        // Copies the value to the system clipboard
-                        let parts: [String?] = [
-                            notes,
-                            points > 0 ? "PTS \(points)" : nil,
-                            ones > 0 || one_misses > 0 ? "   FT  \(ones)/\(ones+one_misses)  (\(ft.formatted(.percent.precision(.fractionLength(0)))))" : nil,
-                            twos > 0 || two_misses > 0 ? "   FG \(twos+threes)/\(twos+two_misses+threes+three_misses)  (\(fg.formatted(.percent.precision(.fractionLength(0)))))" : nil,
-                            threes > 0 || three_misses > 0 ? "   3P  \(threes)/\(threes+three_misses)  (\(p3.formatted(.percent.precision(.fractionLength(0)))))" : nil,
-                            rebounds > 0 ? "REB \(rebounds)" : nil,
-                            assists > 0 ? "AST \(assists)" : nil,
-                            steals > 0 ? "STL \(steals)" : nil,
-                            blocks > 0 ? "BLK \(blocks)" : nil,
-                            "MIN \(minutes)"
-                        ]
-
-                        UIPasteboard.general.string = parts
-                            .compactMap { $0 } // Removes all the 'nil' entries
-                            .joined(separator: "\n")
+                        UIPasteboard.general.string = record.prettyPrint()
                     }) {
                         Image(systemName: "doc.on.doc")
                             .padding(12)
@@ -620,48 +599,42 @@ struct CountsView: View {
         }
     }
     
-    func clearStats() {
-        points = 0
-        rebounds = 0
-        assists = 0
-        steals = 0
-        blocks = 0
+    private func updateCounts() {
+        ones = record.buckets.filter { $0 == 1 }.count
+        twos = record.buckets.filter { $0 == 2 }.count
+        threes = record.buckets.filter { $0 == 3 }.count
+        
+        one_misses = record.misses.filter { $0 == 1 }.count
+        two_misses = record.misses.filter { $0 == 2 }.count
+        three_misses = record.misses.filter { $0 == 3 }.count
+    }
+    
+    private func clearStats() {
+        record.clear()
         ones = 0
         twos = 0
         threes = 0
         one_misses = 0
         two_misses = 0
         three_misses = 0
-        buckets = []
-        misses = []
-        timeIn = 0
         timerRunning = false
-        notes = ""
     }
 
-    func saveGame() {
-        // Initialize a new record using current state values
-        let newRecord = GameRecord(
-            buckets: buckets,
-            misses: misses,
-            points: points,
-            rebounds: rebounds,
-            assists: assists,
-            steals: steals,
-            blocks: blocks,
-            timeIn: timeIn,
-            notes: notes
-        )
-        
-        modelContext.insert(newRecord)
+    private func saveGame() {
+        modelContext.insert(record.copy())
         
         clearStats()
     }
     
-    func formatTime(_ time: TimeInterval) -> String {
+    private func formatTime(_ time: TimeInterval) -> String {
         let minutes = Int(time) / 60
         let seconds = Int(time) % 60
         return String(format: "%02d:%02d", minutes, seconds)
+    }
+    
+    private func playSystemClick(soundID: SystemSoundID = 1104) {
+        // 1104 is the standard "tink" sound
+        AudioServicesPlaySystemSound(soundID)
     }
 }
 
@@ -733,11 +706,6 @@ struct HistoryView: View {
             }
         }
     }
-}
-
-func playSystemClick(soundID: SystemSoundID = 1104) {
-    // 1104 is the standard "tink" sound
-    AudioServicesPlaySystemSound(soundID)
 }
 
 #Preview {
