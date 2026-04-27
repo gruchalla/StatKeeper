@@ -468,6 +468,7 @@ struct CountsView: View {
                             // Adjust startTime so it accounts for time already elapsed
                             startTime = Date().addingTimeInterval(-timeIn)
                             timerRunning.toggle()
+                            UIApplication.shared.isIdleTimerDisabled = true
                         }
                     }) {
                         VStack {
@@ -492,6 +493,7 @@ struct CountsView: View {
                         if timerRunning {
                             timerRunning.toggle()
                         }
+                        UIApplication.shared.isIdleTimerDisabled = false
                     })
                     {
                             VStack {
@@ -556,7 +558,7 @@ struct CountsView: View {
                         Button("Save & Reset", role: .destructive) {
                             saveGame()
                         }
-                        Button("Clear", role: .destructive) {
+                        Button("Reset", role: .destructive) {
                             clearStats()
                         }
                         Button("Cancel", role: .cancel) { }
