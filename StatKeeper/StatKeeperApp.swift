@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct StatKeeperApp: App {
@@ -13,5 +14,6 @@ struct StatKeeperApp: App {
         WindowGroup {
             ContentView()
         }
+        .modelContainer(for: GameRecord.self)
     }
 }

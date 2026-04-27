@@ -7,32 +7,46 @@
 
 import SwiftUI
 import AudioToolbox
+import SwiftData
 internal import Combine
 
-struct GameRecord: Identifiable {
-    let id = UUID()
-    let date = Date()
-    let buckets: [Int]
-    let misses: [Int]
-    let points: Int
-    let rebounds: Int
-    let assists: Int
-    let steals: Int
-    let blocks: Int
-    let timeIn: TimeInterval
-    let notes: String
+
+@Model
+class GameRecord: Identifiable {
+    var id: UUID = UUID()
+    var date: Date = Date()
+    var buckets: [Int]
+    var misses: [Int]
+    var points: Int
+    var rebounds: Int
+    var assists: Int
+    var steals: Int
+    var blocks: Int
+    var timeIn: TimeInterval
+    var notes: String
+
+    init(buckets: [Int], misses: [Int], points: Int, rebounds: Int, assists: Int, steals: Int, blocks: Int, timeIn: TimeInterval, notes: String) {
+        self.buckets = buckets
+        self.misses = misses
+        self.points = points
+        self.rebounds = rebounds
+        self.assists = assists
+        self.steals = steals
+        self.blocks = blocks
+        self.timeIn = timeIn
+        self.notes = notes
+    }
 }
 
 struct ContentView: View {
-    @State private var history: [GameRecord] = []
 
     var body: some View {
         TabView {
-            CountsView(history: $history)
+            CountsView()
                 .tabItem {
                     Label("Counters", systemImage: "sportscourt.fill")
                 }
-            HistoryView(history: $history)
+            HistoryView()
                 .tabItem {
                     Label("Log", systemImage: "list.bullet.rectangle.fill")
                 }
@@ -43,6 +57,8 @@ struct ContentView: View {
 }
 
 struct CountsView: View {
+    @Environment(\.modelContext) private var modelContext // Access the database context
+
     @State private var buckets: [Int] = []
     @State private var misses: [Int] = []
     @State private var ones = 0
@@ -64,7 +80,6 @@ struct CountsView: View {
     @State private var notes: String = ""
 
     @State private var showResetAlert = false
-    @Binding var history: [GameRecord]
 
     // Timer that "ticks" every 0.1 seconds
     let timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
@@ -638,8 +653,7 @@ struct CountsView: View {
             notes: notes
         )
         
-        // Add it to your bound history array
-        history.insert(newRecord, at: 0)
+        modelContext.insert(newRecord)
         
         clearStats()
     }
@@ -652,7 +666,8 @@ struct CountsView: View {
 }
 
 struct HistoryView: View {
-    @Binding var history: [GameRecord]
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \GameRecord.date, order: .reverse) var history: [GameRecord]
 
     var body: some View {
         List{
@@ -707,7 +722,7 @@ struct HistoryView: View {
                 .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                 Button(role: .destructive) {
                                     if let index = history.firstIndex(where: { $0.id == record.id }) {
-                                        history.remove(at: index)
+                                        modelContext.delete(history[index])
                                     }
                                 } label: {
                                     Label("Delete", systemImage: "trash")
