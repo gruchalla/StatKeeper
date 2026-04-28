@@ -30,12 +30,12 @@ class PlayerRecord: Identifiable {
     
     var freeThrowAttempts: Int { ones + oneMisses }
     var twoPointAttempts: Int { twos + twoMisses }
-    var threePointAttempts: Int { threes + threeMisses }   
+    var threePointAttempts: Int { threes + threeMisses }
     var fieldGoals: Int { twos + threes }
-    var fieldGoalAttempts: Int { twos + twoMisses + threes + threeMisses }
-    var ftPercentage: Float { Float(ones) / Float(ones  + oneMisses) }
-    var fgPercentage: Float { Float(fieldGoals) / Float(fieldGoalAttempts) }
-    var threePointPercentage: Float { Float(threes) / Float(threes + threeMisses) }
+    var fieldGoalAttempts: Int { twoPointAttempts + threePointAttempts }
+    var ftPercentage: Float { freeThrowAttempts == 0 ? 0.0 : Float(ones) / Float(freeThrowAttempts) }
+    var fgPercentage: Float { fieldGoalAttempts == 0 ? 0.0 : Float(fieldGoals) / Float(fieldGoalAttempts) }
+    var threePointPercentage: Float { threePointAttempts == 0 ? 0.0 : Float(threes) / Float(threePointAttempts) }
     
     var minutesIn: Int { Int(timeIn) / 60 }
     

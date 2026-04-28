@@ -25,7 +25,7 @@ struct CounterView: View {
             HStack {
                 MinusButton(action: {
                     value -= value == 0 ? 0 : 1
-                    playSystemClick()
+                    Feedback.deleteWithSound()
                 })
                 
                 Spacer()
@@ -34,7 +34,7 @@ struct CounterView: View {
                 
                 Button(action: {
                     value += 1
-                    playSystemClick()
+                    Feedback.tapWithSound()
                 }){
                     Text("+")
                         .frame(width: 35, height: 35)

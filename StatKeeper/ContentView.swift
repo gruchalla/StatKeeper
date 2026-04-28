@@ -8,7 +8,6 @@
 import SwiftUI
 import SwiftData
 
-import AudioToolbox
 internal import Combine
 
 struct ContentView: View {
@@ -17,11 +16,11 @@ struct ContentView: View {
         TabView {
             PlayerView()
                 .tabItem {
-                    Label("Counters", systemImage: "sportscourt.fill")
+                    Label(LocalizedStringKey("Counters"), systemImage: "sportscourt.fill")
                 }
             HistoryView()
                 .tabItem {
-                    Label("Log", systemImage: "list.bullet.rectangle.fill")
+                    Label(LocalizedStringKey("Log"), systemImage: "list.bullet.rectangle.fill")
                 }
         }
         .tabViewStyle(.automatic)

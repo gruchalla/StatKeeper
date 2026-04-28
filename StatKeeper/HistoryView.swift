@@ -57,6 +57,7 @@ struct HistoryView: View {
                 .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                 Button(role: .destructive) {
                                     modelContext.delete(record)
+                                    Feedback.deleteWithSound()
                                 } label: {
                                     Label("Delete", systemImage: "trash")
                                 }
@@ -64,6 +65,7 @@ struct HistoryView: View {
                 .swipeActions(edge: .leading, allowsFullSwipe: true) {
                                 Button(role: .cancel) {
                                     UIPasteboard.general.string = record.prettyPrint()
+                                    Feedback.copied()
                                 } label: {
                                     Label("Copy", systemImage: "doc.on.doc")
                                 }

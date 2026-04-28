@@ -6,14 +6,7 @@
 //
 import SwiftUI
 import SwiftData
-
-import AudioToolbox
 internal import Combine
-
-func playSystemClick(soundID: SystemSoundID = 1104) {
-    // 1104 is the standard "tink" sound
-    AudioServicesPlaySystemSound(soundID)
-}
 
 struct PlayerView: View {
     @Environment(\.modelContext) private var modelContext // Access the database context
@@ -77,8 +70,6 @@ struct PlayerView: View {
         }
     }
         
-    // Timer that "ticks" every 0.1 seconds
-    //let timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
     
     var body: some View {
         ScrollView {
@@ -96,7 +87,7 @@ struct PlayerView: View {
                     HStack {
                         MinusButton(action: {
                             _ = playerState.buckets.popLast()
-                            playSystemClick(soundID:1123)
+                            Feedback.deleteWithSound()
                         })
                         
                         Spacer()
@@ -104,7 +95,7 @@ struct PlayerView: View {
                         Spacer()
                         Button(action: {
                             playerState.buckets.append(1)
-                            playSystemClick()
+                            Feedback.tapWithSound()
                         }){
                             Text("1")
                                 .padding()
@@ -115,7 +106,7 @@ struct PlayerView: View {
                         }
                         Button(action: {
                             playerState.buckets.append(2)
-                            playSystemClick()
+                            Feedback.tapWithSound()
                         }){
                             Text("2")
                                 .padding()
@@ -126,7 +117,7 @@ struct PlayerView: View {
                         }
                         Button(action:{
                             playerState.buckets.append(3)
-                            playSystemClick()
+                            Feedback.tapWithSound()
                         }){
                             Text("3")
                                 .frame(width: 45, height: 45)
@@ -138,22 +129,22 @@ struct PlayerView: View {
                     HStack {
                         MinusButton(action: {
                             _ = playerState.misses.popLast()
-                            playSystemClick(soundID:1123)
+                            Feedback.deleteWithSound()
                         })
                         
                         Spacer()
                         MissButton(label: "1", action: {
                             playerState.misses.append(1)
-                            playSystemClick()
+                            Feedback.tapWithSound()
                         })
                         MissButton(label: "2", action: {
                             playerState.misses.append(2)
-                            playSystemClick()
+                            Feedback.tapWithSound()
 
                         })
                         MissButton(label: "3", action:{
                             playerState.misses.append(3)
-                            playSystemClick()
+                            Feedback.tapWithSound()
                         })
                     
                     }
