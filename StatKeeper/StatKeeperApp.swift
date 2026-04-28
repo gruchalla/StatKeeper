@@ -14,6 +14,6 @@ struct StatKeeperApp: App {
         WindowGroup {
             ContentView()
         }
-        .modelContainer(for: GameRecord.self)
+        .modelContainer(for: PlayerRecord.self)
     }
 }
