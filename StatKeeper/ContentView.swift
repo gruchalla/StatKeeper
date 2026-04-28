@@ -10,6 +10,9 @@ import SwiftData
 
 internal import Combine
 
+/// The root view hosting the primary tabs:
+/// - Counters: live stat tracking
+/// - Log: saved session history
 struct ContentView: View {
 
     var body: some View {
@@ -27,7 +30,6 @@ struct ContentView: View {
         .indexViewStyle(.page(backgroundDisplayMode: .always))
     }
 }
-
 
 #Preview {
     ContentView()

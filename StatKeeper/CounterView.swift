@@ -8,6 +8,15 @@ import SwiftUI
 import AudioToolbox
 internal import Combine
 
+/// A labeled counter with decrement and increment controls.
+///
+/// Displays a title, current value, a MinusButton for decrementing, and a colored
+/// circular “+” button for incrementing. Haptic/sound feedback is provided on change.
+///
+/// - Parameters:
+///   - label: Display name shown above the counter.
+///   - color: Accent color used for the “+” button and background tint.
+///   - value: A binding to the integer being modified.
 struct CounterView: View {
     let label: String
     let color: Color
@@ -18,7 +27,6 @@ struct CounterView: View {
             HStack{
                 Text(label).font(.footnote)
                 Spacer()
-                
             }
             .padding(.bottom, 1)
             
@@ -42,7 +50,7 @@ struct CounterView: View {
                         .foregroundColor(.white)
                         .clipShape(Circle())
                 }
-                
+                .accessibilityLabel(Text("Increment \(label)"))
             }
         }
         .padding()
@@ -54,5 +62,8 @@ struct CounterView: View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.black, lineWidth: 1)
         )
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(Text(label))
+        .accessibilityValue(Text("\(value)"))
     }
 }

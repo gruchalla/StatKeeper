@@ -6,6 +6,7 @@
 //
 import SwiftUI
 
+/// A minimalist circular “−” button used for decrement actions.
 struct MinusButton: View {
     let action: () -> Void
     
@@ -15,6 +16,7 @@ struct MinusButton: View {
                 .frame(width: 30, height: 30)
                 .foregroundColor(Color(.label))
                 .clipShape(Circle())
+                // Soft stroke with blur to give a slightly embossed ring.
                 .overlay(
                     Circle()
                         .stroke(Color(.label).opacity(0.2), lineWidth: 4)
@@ -23,5 +25,6 @@ struct MinusButton: View {
                         .mask(Circle())
                 )
         }
+        .accessibilityLabel(Text("Decrement"))
     }
 }

@@ -7,8 +7,13 @@
 import SwiftUI
 import SwiftData
 
+/// Displays a list of saved PlayerRecord entries, most recent first.
+///
+/// Each row shows the save date, notes, and a horizontally scrollable grid of key stats.
+/// Swipe actions allow copying a summary or deleting a record.
 struct HistoryView: View {
     @Environment(\.modelContext) private var modelContext
+    /// Query all records sorted by date descending.
     @Query(sort: \PlayerRecord.date, order: .reverse) var history: [PlayerRecord]
 
     var body: some View {
@@ -55,25 +60,24 @@ struct HistoryView: View {
                     }
                 }
                 .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                Button(role: .destructive) {
-                                    modelContext.delete(record)
-                                    Feedback.deleteWithSound()
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
-                                }
-                            }
+                    Button(role: .destructive) {
+                        modelContext.delete(record)
+                        Feedback.deleteWithSound()
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                }
                 .swipeActions(edge: .leading, allowsFullSwipe: true) {
-                                Button(role: .cancel) {
-                                    UIPasteboard.general.string = record.prettyPrint()
-                                    Feedback.copied()
-                                } label: {
-                                    Label("Copy", systemImage: "doc.on.doc")
-                                }
-                            }
-
-
-
+                    Button(role: .cancel) {
+                        UIPasteboard.general.string = record.prettyPrint()
+                        Feedback.copied()
+                    } label: {
+                        Label("Copy", systemImage: "doc.on.doc")
+                    }
+                }
             }
         }
+        .navigationTitle("Log")
+        .accessibilityLabel(Text("History"))
     }
 }
