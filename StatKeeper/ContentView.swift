@@ -25,6 +25,10 @@ struct ContentView: View {
                 .tabItem {
                     Label(LocalizedStringKey("Log"), systemImage: "list.bullet.rectangle.fill")
                 }
+            ChartView()
+                .tabItem {
+                    Label(LocalizedStringKey("Charts"), systemImage: "chart.line.uptrend.xyaxis")
+                }
         }
         .tabViewStyle(.automatic)
         .indexViewStyle(.page(backgroundDisplayMode: .always))
