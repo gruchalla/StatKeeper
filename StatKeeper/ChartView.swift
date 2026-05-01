@@ -57,7 +57,7 @@ struct ChartView: View {
                         x: .value("Game", index),
                         y: .value("Value", game.points)
                     )
-                    .foregroundStyle(Color.black)
+                    .foregroundStyle(Color(.label))
                     .lineStyle(StrokeStyle(lineWidth: 0.5))
                 }
             }
@@ -66,12 +66,7 @@ struct ChartView: View {
                 "2Ps": Color(red:0.39, green:0.59, blue:0.92),
                 "3Ps": Color(red:0.0, green:0.0, blue:1.0)
             ])
-            .chartLegend(position: .bottom, alignment: .center)
-            .chartXAxisLabel("Game")
-            .chartYAxisLabel("Points")
-            .chartScrollableAxes(.horizontal)
-            .chartXVisibleDomain(length: xDomain)
-            .chartScrollPosition(x: $scrollPosition)
+            .chartYAxisLabel("PTS")
             .padding()
             
             // 2) Shooting percentages per game: FT%, FG% (2s+3s), and 3P%.
@@ -105,12 +100,7 @@ struct ChartView: View {
                 "FG%": Color(red:0.39, green:0.59, blue:0.92),
                 "3P%": Color(red:0.0, green:0.0, blue:1.0)
             ])
-            .chartLegend(position: .bottom, alignment: .center)
-            .chartXAxisLabel("Game")
-            .chartYAxisLabel("Percent")
-            .chartScrollableAxes(.horizontal)
-            .chartXVisibleDomain(length: xDomain)
-            .chartScrollPosition(x: $scrollPosition)
+            .chartYAxisLabel("%")
             .padding()
             
             // 3) Box score counting stats per game: rebounds, assists, steals, blocks.
@@ -142,18 +132,19 @@ struct ChartView: View {
                 }
             }
             .chartForegroundStyleScale([
-                "REB": Color(.purple),
-                "AST": Color(.green),
+                "AST": Color(.cyan),
+                "REB": Color(.green),
                 "STL": Color(.red),
                 "BLK": Color(.orange)
             ])
+
+            .padding()
         }
         .chartLegend(position: .bottom, alignment: .center)
         .chartXAxisLabel("Game")
         .chartScrollableAxes(.horizontal)
         .chartXVisibleDomain(length: xDomain)
         .chartScrollPosition(x: $scrollPosition)
-        .padding()
         
     }
 }

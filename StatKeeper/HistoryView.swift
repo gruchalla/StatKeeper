@@ -16,6 +16,9 @@ struct HistoryView: View {
     /// Query all records sorted by date descending.
     @Query(sort: \PlayerRecord.date, order: .reverse) var history: [PlayerRecord]
 
+    @State private var showDeleteAlert = false
+    @State private var recordToDelete: PlayerRecord?
+    
     var body: some View {
         List{
             ForEach(history) { record in
@@ -61,8 +64,8 @@ struct HistoryView: View {
                 }
                 .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                     Button(role: .destructive) {
-                        modelContext.delete(record)
-                        Feedback.deleteWithSound()
+                        recordToDelete = record
+                        showDeleteAlert = true
                     } label: {
                         Label("Delete", systemImage: "trash")
                     }
@@ -79,5 +82,19 @@ struct HistoryView: View {
         }
         .navigationTitle("Log")
         .accessibilityLabel(Text("History"))
+        .alert("Are you sure?", isPresented: $showDeleteAlert) {
+                Button("Delete", role: .destructive) {
+                    modelContext.delete(recordToDelete!)
+                    Feedback.deleteWithSound()
+                    showDeleteAlert = false
+                }
+                Button("Cancel", role: .cancel) {
+                    showDeleteAlert = false
+                }
+            } message: {
+                Text("Delete Record")
+            }
+            .accessibilityLabel(Text("Delete Record"))
     }
+
 }
