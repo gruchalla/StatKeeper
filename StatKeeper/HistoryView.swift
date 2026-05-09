@@ -78,7 +78,6 @@ struct HistoryView: View {
                     }
                     .swipeActions(edge: .leading, allowsFullSwipe: true) {
                         Button(role: .cancel) {
-                            // Set the record for editing and switch to Counters tab.
                             recordToEdit = record
                             showEditAlert = true
                         } label: {
@@ -104,6 +103,7 @@ struct HistoryView: View {
             .accessibilityLabel(Text("Delete Record"))
             .alert("Are you sure?", isPresented: $showEditAlert) {
                 Button("Edit", role: .destructive) {
+                    // Set the record for editing and switch to Counters tab.
                     editingRecord = recordToEdit
                     selectedTab = 0
                     Feedback.copied()
