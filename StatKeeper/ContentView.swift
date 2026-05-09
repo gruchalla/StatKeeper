@@ -14,21 +14,28 @@ internal import Combine
 /// - Counters: live stat tracking
 /// - Log: saved session history
 struct ContentView: View {
+    @State private var editingRecord: PlayerRecord? = nil
+    @State private var selectedTab: Int = 0
 
     var body: some View {
-        TabView {
-            PlayerView()
+        TabView(selection: $selectedTab) {
+            PlayerView(editingRecord: $editingRecord)
                 .tabItem {
                     Label(LocalizedStringKey("Counters"), systemImage: "sportscourt.fill")
                 }
-            HistoryView()
+                .tag(0)
+
+            HistoryView(editingRecord: $editingRecord, selectedTab: $selectedTab)
                 .tabItem {
                     Label(LocalizedStringKey("Log"), systemImage: "list.bullet.rectangle.fill")
                 }
+                .tag(1)
+
             ChartView()
                 .tabItem {
                     Label(LocalizedStringKey("Charts"), systemImage: "chart.line.uptrend.xyaxis")
                 }
+                .tag(2)
         }
         .tabViewStyle(.automatic)
         .indexViewStyle(.page(backgroundDisplayMode: .always))
@@ -39,3 +46,4 @@ struct ContentView: View {
     ContentView()
         .modelContainer(for: PlayerRecord.self, inMemory: true)
 }
+

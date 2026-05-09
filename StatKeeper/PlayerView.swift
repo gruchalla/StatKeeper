@@ -14,7 +14,8 @@ internal import Combine
 /// to save, at which point it is persisted as a PlayerRecord via SwiftData.
 struct PlayerView: View {
     @Environment(\.modelContext) private var modelContext // Access the database context
-    
+    @Binding var editingRecord: PlayerRecord? // The record we are editing (if any)
+
     @State private var playerState = PlayerState()
     @State private var timerRunning : Bool = false
     @State private var startTime : Date = Date()
@@ -51,9 +52,23 @@ struct PlayerView: View {
         /// Count of missed 3-pointers.
         var threeMisses: Int { misses.filter { $0 == 3 }.count }
         
+        init() {}
+        
+        /// Loads an existing record into the transient state for editing.
+        init(from record: PlayerRecord) {
+            self.buckets = record.buckets
+            self.misses = record.misses
+            self.rebounds = record.rebounds
+            self.assists = record.assists
+            self.steals = record.steals
+            self.blocks = record.blocks
+            self.timeIn = record.timeIn
+            self.notes = record.notes
+        }
+        
         /// Resets all stats and notes to their initial values.
         mutating func clear() { self = PlayerState() }
-
+        
         /// Creates a persisted PlayerRecord snapshot from the current state.
         ///
         /// Use when saving to history. Note that the record's date is set by the model.
@@ -66,6 +81,18 @@ struct PlayerView: View {
                        blocks: blocks,
                        timeIn: timeIn,
                        notes: notes)
+        }
+        
+        /// Updates an existing persisted record with the current state values.
+        func update(_ record: PlayerRecord) {
+            record.buckets = self.buckets
+            record.misses = self.misses
+            record.rebounds = self.rebounds
+            record.assists = self.assists
+            record.steals = self.steals
+            record.blocks = self.blocks
+            record.timeIn = self.timeIn
+            record.notes = self.notes
         }
     }
     
@@ -344,17 +371,33 @@ struct PlayerView: View {
             }
             .padding()
         }
+        // Load or clear the UI when editingRecord changes.
+        .onChange(of: editingRecord) { _, newValue in
+            timerRunning = false
+            UIApplication.shared.isIdleTimerDisabled = false
+            if let record = newValue {
+                playerState = PlayerState(from: record)
+            } else {
+                playerState.clear()
+            }
+        }
     }
     
     /// Clears all current stats and stops the timer.
     private func clearStats() {
         playerState.clear()
+        editingRecord = nil
         timerRunning = false
     }
 
     /// Persists the current PlayerState as a PlayerRecord and then resets the UI.
     private func savePlayer() {
-        modelContext.insert(playerState.record())
+        if (editingRecord != nil) {
+            playerState.update(editingRecord!)
+        }
+        else {
+            modelContext.insert(playerState.record())
+        }
         clearStats()
     }
     
@@ -369,3 +412,4 @@ struct PlayerView: View {
     }
     
 }
+
