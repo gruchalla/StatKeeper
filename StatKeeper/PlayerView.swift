@@ -15,12 +15,12 @@ internal import Combine
 struct PlayerView: View {
     @Environment(\.modelContext) private var modelContext // Access the database context
     @Binding var editingRecord: PlayerRecord? // The record we are editing (if any)
-
+    
     @State private var playerState = PlayerState()
     @State private var timerRunning : Bool = false
     @State private var startTime : Date = Date()
     @State private var showResetAlert = false
-
+    
     /// A transient container for the live, unsaved stats in the UI.
     struct PlayerState {
         /// Made shots recorded as point values (1, 2, 3).
@@ -74,13 +74,13 @@ struct PlayerView: View {
         /// Use when saving to history. Note that the record's date is set by the model.
         func record() -> PlayerRecord {
             PlayerRecord(buckets: buckets,
-                       misses: misses,
-                       rebounds: rebounds,
-                       assists: assists,
-                       steals: steals,
-                       blocks: blocks,
-                       timeIn: timeIn,
-                       notes: notes)
+                         misses: misses,
+                         rebounds: rebounds,
+                         assists: assists,
+                         steals: steals,
+                         blocks: blocks,
+                         timeIn: timeIn,
+                         notes: notes)
         }
         
         /// Updates an existing persisted record with the current state values.
@@ -119,7 +119,7 @@ struct PlayerView: View {
             .accessibilityLabel(Text("Miss \(label)-point shot"))
         }
     }
-        
+    
     var body: some View {
         ScrollView {
             VStack {
@@ -194,13 +194,13 @@ struct PlayerView: View {
                         MissButton(label: "2", action: {
                             playerState.misses.append(2)
                             Feedback.tapWithSound()
-
+                            
                         })
                         MissButton(label: "3", action:{
                             playerState.misses.append(3)
                             Feedback.tapWithSound()
                         })
-                    
+                        
                     }
                     HStack{
                         Text("Misses: ").foregroundColor(.red)
@@ -273,18 +273,18 @@ struct PlayerView: View {
                         UIApplication.shared.isIdleTimerDisabled = false
                     })
                     {
-                            VStack {
-                                Image(systemName: "arrow.left.to.line")
-                                Text("OUT").font(.footnote).bold()
-                            }
-                            
-                            .frame(width: 50, height: 50)
-                            .background(!timerRunning ? Color.black : Color.gray)
-                            .foregroundColor(.white)
-                            .clipShape(Circle())
-                            .scaleEffect(!timerRunning ? 0.9 : 1.0)
-                            .shadow(color: .black.opacity(!timerRunning ? 0 : 0.3), radius: 4, x: 0, y: 4)
-                            .animation(.spring(response: 0.3), value: timerRunning)
+                        VStack {
+                            Image(systemName: "arrow.left.to.line")
+                            Text("OUT").font(.footnote).bold()
+                        }
+                        
+                        .frame(width: 50, height: 50)
+                        .background(!timerRunning ? Color.black : Color.gray)
+                        .foregroundColor(.white)
+                        .clipShape(Circle())
+                        .scaleEffect(!timerRunning ? 0.9 : 1.0)
+                        .shadow(color: .black.opacity(!timerRunning ? 0 : 0.3), radius: 4, x: 0, y: 4)
+                        .animation(.spring(response: 0.3), value: timerRunning)
                     }
                     .accessibilityLabel(Text("Sub out"))
                 }
@@ -304,7 +304,7 @@ struct PlayerView: View {
                         playerState.timeIn = Date().timeIntervalSince(startTime)
                     }
                 }
-
+                
                 // Notes capture.
                 VStack(alignment: .leading) {
                     Text("Notes")
@@ -325,6 +325,7 @@ struct PlayerView: View {
                         }
                     }
                 }
+                Divider()
                 
                 // Actions: reset/save and copy summary.
                 HStack{
@@ -332,12 +333,16 @@ struct PlayerView: View {
                     Button(action: {
                         showResetAlert = true
                     }) {
-                        Image(systemName: "arrow.counterclockwise")
-                            .font(.title2)
-                            .padding()
-                            .frame(width: 40, height: 40)
-                            .foregroundColor(Color(.label))
-                            .clipShape(Circle())
+                        HStack(spacing: 8) {
+                            Image(systemName: "arrow.counterclockwise")
+                            Text("Reset")
+                                .font(.subheadline)
+                        }
+                        .padding()
+                        .foregroundColor(Color(.label))
+                        .background(Color(.systemGray6))
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        
                     }
                     .alert("Are you sure?", isPresented: $showResetAlert) {
                         Button("Save & Reset", role: .destructive) {
@@ -350,22 +355,26 @@ struct PlayerView: View {
                     } message: {
                         Text("Reset your counters.")
                     }
-                    .accessibilityLabel(Text("Save or reset"))
-                    
+                    .accessibilityLabel(Text("Save and reset"))
+                    //Spacer()
                     // Copy a human-readable summary to the clipboard.
                     Button(action: {
                         UIPasteboard.general.string = playerState.record().prettyPrint()
                         Feedback.copied()
                     }) {
-                        Image(systemName: "doc.on.doc")
-                            .padding(12)
-                            .frame(width: 40, height: 40)
-                            .foregroundColor(Color(.label))
-                            .clipShape(Circle())
+                        HStack(spacing: 8) {
+                            Image(systemName: "doc.on.doc")
+                            Text("Copy")
+                                .font(.subheadline)
+                        }
+                        .padding()
+                        .foregroundColor(Color(.label))
+                        .background(Color(.systemGray6))
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
                     }
                     .accessibilityLabel(Text("Copy summary"))
-                    Spacer()
-
+                    //Spacer()
+                    
                 }
                 
             }
@@ -398,6 +407,7 @@ struct PlayerView: View {
         else {
             modelContext.insert(playerState.record())
         }
+        UIPasteboard.general.string = playerState.record().prettyPrint()
         clearStats()
     }
     
