@@ -109,11 +109,21 @@ struct PlayerView: View {
                         .frame(width: 45, height: 45)
                         .background(Color.blue)
                         .foregroundColor(.white)
-                        .clipShape(Circle())
+                        .background(.ultraThinMaterial, in: Circle())
+                        .background {
+                                Circle().fill(Color.blue.opacity(0.6))
+                        }
+                        .overlay {
+                            // Adds the 3D "rim" highlight
+                            Circle()
+                                .stroke(.white.opacity(0.2), lineWidth: 0.5)
+                        }
+                        .shadow(color: Color(.label).opacity(0.1), radius: 2, x: 0, y: 2)
                     Capsule()
                         .fill(Color.white)
-                        .frame(width: 2, height: 50)
+                        .frame(width: 2, height: 44)
                         .rotationEffect(.degrees(45))
+                    
                 }
             }
             .accessibilityLabel(Text("Miss \(label)-point shot"))
@@ -154,7 +164,16 @@ struct PlayerView: View {
                                 .frame(width: 45, height: 45)
                                 .background(Color.blue)
                                 .foregroundColor(.white)
-                                .clipShape(Circle())
+                                .background(.ultraThinMaterial, in: Circle())
+                                .background {
+                                        Circle().fill(Color.blue.opacity(0.6))
+                                }
+                                .overlay {
+                                    // Adds the 3D "rim" highlight
+                                    Circle()
+                                        .stroke(.white.opacity(0.2), lineWidth: 0.5)
+                                }
+                                .shadow(color: Color(.label).opacity(0.1), radius: 2, x: 0, y: 2)
                         }
                         Button(action: {
                             playerState.buckets.append(2)
@@ -165,7 +184,16 @@ struct PlayerView: View {
                                 .frame(width: 45, height: 45)
                                 .background(Color.blue)
                                 .foregroundColor(.white)
-                                .clipShape(Circle())
+                                .background(.ultraThinMaterial, in: Circle())
+                                .background {
+                                        Circle().fill(Color.blue.opacity(0.6))
+                                }
+                                .overlay {
+                                    // Adds the 3D "rim" highlight
+                                    Circle()
+                                        .stroke(.white.opacity(0.2), lineWidth: 0.5)
+                                }
+                                .shadow(color: Color(.label).opacity(0.1), radius: 2, x: 0, y: 2)
                         }
                         Button(action:{
                             playerState.buckets.append(3)
@@ -175,7 +203,16 @@ struct PlayerView: View {
                                 .frame(width: 45, height: 45)
                                 .background(Color.blue)
                                 .foregroundColor(.white)
-                                .clipShape(Circle())
+                                .background(.ultraThinMaterial, in: Circle())
+                                .background {
+                                        Circle().fill(Color.blue.opacity(0.6))
+                                }
+                                .overlay {
+                                    // Adds the 3D "rim" highlight
+                                    Circle()
+                                        .stroke(.white.opacity(0.2), lineWidth: 0.5)
+                                }
+                                .shadow(color: Color(.label).opacity(0.1), radius: 2, x: 0, y: 2)
                         }
                     }
                     HStack {
@@ -250,7 +287,26 @@ struct PlayerView: View {
                         }
                     }
                     .frame(width: 50, height: 50)
-                    .background(timerRunning ? Color.black : Color.gray)
+                    //.background(timerRunning ? Color.black : Color.gray)
+                    .background {
+                        if timerRunning {
+                            Circle()
+                                .fill(Color.black)
+                                // The "Sunken" Effect: Inner Shadow
+                                .overlay(
+                                    Circle()
+                                        .stroke(Color.white.opacity(0.2), lineWidth: 6)
+                                        .blur(radius: 4)
+                                        .offset(x: -1, y: -2)
+                                        .mask(Circle())
+                                )
+                        } else {
+                            Circle()
+                                .fill(Color.gray)
+                                // The "Raised" Effect: Outer Shadow
+                                .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 3)
+                        }
+                    }
                     .foregroundColor(.white)
                     .clipShape(Circle())
                     .scaleEffect(timerRunning ? 0.9 : 1.0) // Looks pressed in
@@ -279,7 +335,25 @@ struct PlayerView: View {
                         }
                         
                         .frame(width: 50, height: 50)
-                        .background(!timerRunning ? Color.black : Color.gray)
+                        .background {
+                            if !timerRunning {
+                                Circle()
+                                    .fill(Color.black)
+                                    // The "Sunken" Effect: Inner Shadow
+                                    .overlay(
+                                        Circle()
+                                            .stroke(Color.white.opacity(0.2), lineWidth: 6)
+                                            .blur(radius: 4)
+                                            .offset(x: -1, y: -2)
+                                            .mask(Circle())
+                                    )
+                            } else {
+                                Circle()
+                                    .fill(Color.gray)
+                                    // The "Raised" Effect: Outer Shadow
+                                    .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 3)
+                            }
+                        }
                         .foregroundColor(.white)
                         .clipShape(Circle())
                         .scaleEffect(!timerRunning ? 0.9 : 1.0)
@@ -341,7 +415,7 @@ struct PlayerView: View {
                         .padding()
                         .foregroundColor(Color(.label))
                         .background(Color(.systemGray6))
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .background(.ultraThinMaterial, in:RoundedRectangle(cornerRadius: 8))
                         
                     }
                     .alert("Are you sure?", isPresented: $showResetAlert) {
@@ -370,7 +444,8 @@ struct PlayerView: View {
                         .padding()
                         .foregroundColor(Color(.label))
                         .background(Color(.systemGray6))
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .background(.thickMaterial, in:RoundedRectangle(cornerRadius: 8))
+
                     }
                     .accessibilityLabel(Text("Copy summary"))
                     //Spacer()

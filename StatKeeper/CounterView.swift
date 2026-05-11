@@ -48,7 +48,18 @@ struct CounterView: View {
                         .frame(width: 35, height: 35)
                         .background(color)
                         .foregroundColor(.white)
-                        .clipShape(Circle())
+                        .background(.ultraThinMaterial, in: Circle())
+                        .background {
+                                Circle().fill(color.opacity(0.6))
+                        }
+                        .overlay {
+                            // Adds the 3D "rim" highlight
+                            Circle()
+                                .stroke(.white.opacity(0.2), lineWidth: 0.5)
+                        }
+                        .shadow(color: Color(.label).opacity(0.1), radius: 2, x: 0, y: 2)
+
+                
                 }
                 .accessibilityLabel(Text("Increment \(label)"))
             }
