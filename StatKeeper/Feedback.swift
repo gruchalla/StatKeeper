@@ -4,7 +4,8 @@
 //
 //  Centralized haptic and (optional) sound feedback utilities.
 //
-//  Created by Kenny Gruchalla on 4/27/26.
+//  Copyright © 2026 Kenny Gruchalla
+//  Licensed under the MIT License. See LICENSE in the project root for license information.
 //
 
 import Foundation

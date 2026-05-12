@@ -2,7 +2,8 @@
 //  PlayerView.swift
 //  StatKeeper
 //
-//  Created by Kenny Gruchalla on 4/27/26.
+//  Copyright © 2026 Kenny Gruchalla
+//  Licensed under the MIT License. See LICENSE in the project root for license information.
 //
 import SwiftUI
 import SwiftData
@@ -20,7 +21,8 @@ struct PlayerView: View {
     @State private var timerRunning : Bool = false
     @State private var startTime : Date = Date()
     @State private var showResetAlert = false
-    
+    @State private var showAbout: Bool = false
+
     /// A transient container for the live, unsaved stats in the UI.
     struct PlayerState {
         /// Made shots recorded as point values (1, 2, 3).
@@ -385,11 +387,10 @@ struct PlayerView: View {
                         .font(.headline)
                     
                     TextEditor(text: $playerState.notes)
-                        .frame(height: 150) // Give it some space
+                        .frame(height: 80) // Give it some space
                         .padding(4)
                         .background(RoundedRectangle(cornerRadius: 8).stroke(Color.gray.opacity(0.2)))
                 }
-                .padding()
                 .toolbar {
                     // Dismiss keyboard from the accessory toolbar.
                     ToolbarItemGroup(placement: .keyboard) {
@@ -403,6 +404,7 @@ struct PlayerView: View {
                 
                 // Actions: reset/save and copy summary.
                 HStack{
+                    Spacer()
                     // Reset with confirmation; can save & reset or just reset.
                     Button(action: {
                         showResetAlert = true
@@ -448,13 +450,24 @@ struct PlayerView: View {
 
                     }
                     .accessibilityLabel(Text("Copy summary"))
-                    //Spacer()
-                    
+                    Spacer()
+                    Button {
+                        showAbout = true
+                    } label: {
+                        Image(systemName: "info.circle")
+                    }
+                    .accessibilityLabel(Text("About"))
                 }
+                .sheet(isPresented: $showAbout) {
+                    // Replace PlaceholderAboutView with your real AboutView when available.
+                    InfoView()
+                }
+                }
+            .padding()
                 
             }
             .padding()
-        }
+
         // Load or clear the UI when editingRecord changes.
         .onChange(of: editingRecord) { _, newValue in
             timerRunning = false
