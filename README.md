@@ -1,9 +1,5 @@
 # StatKeeper
 
-[![License: MIT](https://shields.io)](https://opensource.org)
-[![Platform](https://shields.io)]()
-[![Swift](https://shields.io)]()
-
 **StatKeeper** is a SwiftUI iPhone app for tracking a single basketball player's in-game performance. Designed for parents, StatKeeper makes it easy to record key stats in real time and maintain a history of performance across games.
 
 ---
@@ -44,6 +40,6 @@ Distributed under the **MIT License**. See `LICENSE` for more information.
 
 ## Contact
 
-Project Link: [https://github.com](https://github.com/gruchalla/StatKeeper)  
+Project Link: [https://github.com/gruchalla/StatKeeper](https://github.com/gruchalla/StatKeeper)  
 Issues: [Report a bug or request a feature](https://github.com/gruchalla/StatKeeper/issues)
 
