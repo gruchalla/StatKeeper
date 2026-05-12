@@ -28,7 +28,7 @@
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com
+   git clone https://github.com/gruchalla/StatKeeper.git
    ```
 2. Open `StatKeeper.xcodeproj` in Xcode.
 3. Select your development team in **Signing & Capabilities**.
